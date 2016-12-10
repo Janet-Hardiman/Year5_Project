@@ -14,6 +14,7 @@ import org.opencv.objdetect.CascadeClassifier;
 // Images from: http://www.uni-regensburg.de/Fakultaeten/phil_Fak_II/Psychologie/Psy_II/beautycheck/english/
 
 class DetectFaceDemo  {
+    private CascadeClassifier face_cascade, eye_cascade;
     public void run() {
         System.out.println("\nRunning DetectFaceDemo");
 
@@ -26,9 +27,10 @@ class DetectFaceDemo  {
         //    training using Haar type, it took about 5-6 days to complete, but with LBP, it took only some hours
 
         //check where cascade file stored, here it's stored within the project so as to be portable.
-        CascadeClassifier faceDetectorClassifier = new CascadeClassifier("haarcascade_frontalface_default.xml");
+        face_cascade = new CascadeClassifier("haarcascade_frontalface_default.xml");
+    //    eye_cascade = new CascadeClassifier("haarcascade_eye.xml");
 
-        Mat image = Highgui.imread("Face2.jpg");
+        Mat image = Highgui.imread("webcam_capture.png");
 
         System.out.println("Image details \n Channels: "
 
@@ -37,7 +39,7 @@ class DetectFaceDemo  {
         // Detect faces in the image.
         // MatOfRect is a special container class for Rect.
         MatOfRect faceDetections = new MatOfRect();
-        faceDetectorClassifier.detectMultiScale(image, faceDetections); //detectMultiScale will perform the detection
+        face_cascade.detectMultiScale(image, faceDetections); //detectMultiScale will perform the detection
 
         System.out.println(String.format("Detected %s faces", faceDetections.toArray().length));
 
@@ -45,8 +47,19 @@ class DetectFaceDemo  {
         for (Rect rect : faceDetections.toArray()) {
             Core.rectangle(image, new Point(rect.x, rect.y),
 
-                    new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0));
+                    new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0), 2);
         }
+
+        // Find the eyes and turn square in the array
+        MatOfRect eyes = new MatOfRect();
+    //    eye_cascade.detectMultiScale(image, eyes);
+    /*    for (Rect rect : eyes.toArray()) {
+            //Write text to upper left corner
+            Core.putText(image, "Eye", new Point(rect.x,rect.y-5), 1, 2, new Scalar(0,0,255));  //new cvScalar(blue, green, red, unused)
+            //Draw a square
+            Core.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
+                    new Scalar(200, 200, 100),1);
+        }*/
 
         // Save the visualized detection.
         String filename = "harr_faceDetected_Face1.png";

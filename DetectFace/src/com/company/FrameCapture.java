@@ -35,10 +35,10 @@ import org.opencv.imgproc.Imgproc;
 
         cap.retrieve(frame);// The current frame in the camera is saved in "frame"
         System.out.println("Captured image with "+ frame.width()+ " pixels wide by " + frame.height() + " pixels tall.");
-        Highgui.imwrite("me1.jpg", frame);
-        Mat frameBlur = new Mat();
+        Highgui.imwrite("webcam_capture.png", frame);
+        /*Mat frameBlur = new Mat();
         Imgproc.blur(frame, frameBlur, new Size(5,5) );
-        Highgui.imwrite("me2-blurred.jpg", frameBlur);
+        Highgui.imwrite("me2-blurred.jpg", frameBlur);*/
 
         cap.release(); // Remember to release the camera
     }

@@ -17,8 +17,10 @@ import org.opencv.objdetect.CascadeClassifier;
 
 
 class WebCamFaceDetect {
+    private CascadeClassifier face_cascade, eye_cascade;
     public void run() throws Exception{
         System.out.println("\nRunning DetectFaceDemo");
+
 
         //http://stackoverflow.com/questions/8791178/haar-cascades-vs-lbp-cascades-in-face-detection
         //    LBP ( Local Binary Patterns)is faster (a few times faster) but less accurate (10-20% less than Haar).
@@ -31,9 +33,9 @@ class WebCamFaceDetect {
 
         //CascadeClassifier faceDetectorClassifier = new CascadeClassifier("C:/opencv/data/lbpcascades/lbpcascade_frontalface.xml");
         //CascadeClassifier faceDetectorClassifier = new CascadeClassifier("../cascades/lbpcascade_frontalface.xml");
-        CascadeClassifier faceDetectorClassifier =
 
-                new CascadeClassifier("haarcascade_frontalface_default.xml");
+        face_cascade = new CascadeClassifier("haarcascade_frontalface_default.xml");
+        eye_cascade = new CascadeClassifier("haarcascade_eye.xml");
 
         //Get a frame from the webcam
         Mat frame = new Mat();
@@ -61,16 +63,30 @@ class WebCamFaceDetect {
         // Now detect the face in the image.
         // MatOfRect is a special container class for Rect.
         MatOfRect faceDetections = new MatOfRect();
-        faceDetectorClassifier.detectMultiScale(frame, faceDetections); //detectMultiScale will perform the detection
+        face_cascade.detectMultiScale(frame, faceDetections); //detectMultiScale will perform the detection
         System.out.println(String.format("Detected %s faces", faceDetections.toArray().length));
 
         // Draw a bounding box around each face.
         for (Rect rect : faceDetections.toArray()) {
+            Core.putText(frame, "Face", new Point(rect.x, rect.y=5), 1,2, new Scalar(0,0,255)); //new cvScalar(blue, green, red, unused)
             Core.rectangle(frame,  //where to draw the box
                     new Point(rect.x, rect.y),   //bottom left
                     new Point(rect.x + rect.width, rect.y + rect.height), //top right
                     new Scalar(255, 0, 0)); //RGB colour
         }
+
+        // Find the eyes and turn square in the array
+        MatOfRect eyes = new MatOfRect();
+        eye_cascade.detectMultiScale(frame, eyes);
+        for (Rect rect : eyes.toArray()) {
+            //Write text to upper left corner
+            Core.putText(frame, "Eye", new Point(rect.x,rect.y-5), 1, 2, new Scalar(255,0,0));
+            //Draw a square
+            Core.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
+                    new Scalar(200, 200, 100),2);
+        }
+
+
         System.out.println("Bounding boxes drawn");
 
         // Save the visualized detection.
