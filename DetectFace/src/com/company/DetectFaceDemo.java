@@ -62,7 +62,7 @@ class DetectFaceDemo  {
         }*/
 
         // Save the visualized detection.
-        String filename = "harr_faceDetected_Face1.png";
+        String filename = "webCamImg.png";
         System.out.println(String.format("Writing %s", filename));
         Highgui.imwrite(filename, image);
     }

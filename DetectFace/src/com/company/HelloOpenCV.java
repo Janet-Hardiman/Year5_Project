@@ -15,6 +15,8 @@ package com.company;
  * 25/11/2016 - working on showing a live image and capturing a photo of it.
  * 09/12/2016 - setting up raspberry pi for database
  */
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.optional.ssh.Scp;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.highgui.Highgui;
@@ -25,6 +27,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
@@ -47,7 +50,7 @@ public class HelloOpenCV {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         //or ...     System.loadLibrary("opencv_java244");
 
-        VideoCapture webCam = new VideoCapture(0);
+        final VideoCapture[] webCam = {new VideoCapture(0)};
 
         //make the JFrame
         JFrame frame = new JFrame("WebCam Capture - Face detection");
@@ -69,7 +72,7 @@ public class HelloOpenCV {
         cancel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                webCam.release();
+                webCam[0].release();
                 frame.dispose();
             }
         });
@@ -88,24 +91,47 @@ public class HelloOpenCV {
             }
         });
 
-        buttonPanel.add(retake);
+        /*buttonPanel.add(retake);
         retake.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //open live webcam again
-                webCam.isOpened();
-                new FaceDetector();
+                facePanel.repaint();
+                frame.repaint();
+                JOptionPane j1 = new JOptionPane(facePanel);
+                FacePanel f1 = new FacePanel();
+                j1.add(f1);
+                j1.setVisible(true);
+
+                webCam[0] = new VideoCapture(0);
+
+                try {
+                    System.out.println("i am here in try");
+                    VideoStream(webCam[0], frame, faceDetector, f1);
+                    System.out.println("try after function");
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                    System.out.println("i am here");
+                }
+
+                *//*new FaceDetector();
                 FacePanel face2Panel = new FacePanel();
-                frame.add(face2Panel, BorderLayout.CENTER);
+                frame.add(face2Panel, BorderLayout.CENTER);*//*
             }
-        });
+        });*/
 
 
         buttonPanel.add(save);
         save.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                File theDir = new File("newFolder");
+                BufferedImage img = null;
+                try {
+                    img=ImageIO.read(new File("webCamImg.png"));
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                File theDir = new File("images");
                 if (!theDir.exists()) {
                     System.out.println("creating directory: " + theDir);
                     boolean result = false;
@@ -127,49 +153,73 @@ public class HelloOpenCV {
                 System.out.println(path);
 
 
-                File f2 = new File("U:\\Year_5\\Project\\images\\penguin.png");
+                File f2 = new File(path + "\\myName.jpg");
+                String myName = "myName.jpg";
+
                 //File f2 = new File(path);  //output file path
-         /*       try {
+                try {
                     ImageIO.write(img, "jpg", f2 );
                 } catch (IOException e1) {
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
-                }*/
+                }
+                sendToPi(myName);
+            }
+
+            private void sendToPi(String photo) {
+                // This make scp copy of
+                // one local file to remote dir
+                org.apache.tools.ant.taskdefs.optional.ssh.Scp scp = new Scp();
+                int portSSH = 22;
+                String srvrSSH = "192.168.43.184";
+                String userSSH = "pi";
+                String pswdSSH = "raspberry";
+                String localFile = "images/" + photo;
+                String remoteDir = "/home/pi/Desktop";
+
+                scp.setPort( portSSH );
+                scp.setLocalFile( localFile );
+                scp.setTodir( userSSH + ":" + pswdSSH + "@" + srvrSSH + ":" + remoteDir );
+                scp.setProject( new Project() );
+                scp.setTrust( true );
+                scp.execute();
             }
         });
 
         frame.add(buttonPanel, BorderLayout.SOUTH);
         frame.setVisible(true);
 
+        VideoStream(webCam[0], frame, faceDetector, facePanel);
 
+    } //end main
+
+
+    public static void VideoStream(VideoCapture webCam, JFrame frame, FaceDetector faceDetector, FacePanel facePanel) throws InterruptedException {
         //Open and Read from the video stream
         Mat webcam_image = new Mat();
-     //   VideoCapture webCam =new VideoCapture(0);
+            //   VideoCapture webCam =new VideoCapture(0);
 
-        if( webCam.isOpened())
-        {
+        if (webCam.isOpened()) {
             Thread.sleep(500); /// This one-time delay allows the Webcam to initialize itself
-            while( true )
-            {
+            while (true) {
                 webCam.read(webcam_image);
-                if( !webcam_image.empty() )
-                {
+                if (!webcam_image.empty()) {
                     Thread.sleep(200); /// This delay eases the computational load .. with little performance leakage
-                    frame.setSize(webcam_image.width() + 40,webcam_image.height() + 60);
+                    frame.setSize(webcam_image.width() + 40, webcam_image.height() + 60);
                     //Apply the classifier to the captured image
                     webcam_image = faceDetector.detect(webcam_image);
                     //Display the image
                     facePanel.matToBufferedImage(webcam_image);
                     facePanel.repaint();
-                }
-                else
-                {
+                    frame.setVisible(true);
+                    System.out.println("frame visable true <<<<<<<<<<<<<<<<<");
+                } else {
                     System.out.println(" --(!) No captured frame from webcam !");
                     break;
                 }
             }
         }
         webCam.release(); //release the webcam
+        }
 
-    } //end main
 }
