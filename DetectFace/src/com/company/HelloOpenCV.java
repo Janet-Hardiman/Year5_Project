@@ -14,6 +14,7 @@ package com.company;
  * 18/11/2016 - detect eyes and draw rectangles around them.
  * 25/11/2016 - working on showing a live image and capturing a photo of it.
  * 09/12/2016 - setting up raspberry pi for database
+ * 16/12/2016 - preparing for demo
  */
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.optional.ssh.Scp;
