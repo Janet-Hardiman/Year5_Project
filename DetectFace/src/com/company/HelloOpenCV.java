@@ -15,6 +15,7 @@ package com.company;
  * 25/11/2016 - working on showing a live image and capturing a photo of it.
  * 09/12/2016 - setting up raspberry pi for database
  * 16/12/2016 - preparing for demo
+ * 20/01/2017 - Sync Intellij with Github
  */
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.optional.ssh.Scp;
